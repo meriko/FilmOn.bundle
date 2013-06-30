@@ -1,7 +1,7 @@
 TITLE               = 'FilmOn'
+PREFIX              = '/video/filmon'
 ART                 = 'art-default.jpg'
 ICON                = 'icon-default.png'
-BASE_URL            = 'http://ww.filmon.com'
 API_BASE_URL        = 'http://www.filmon.com/tv/api/'
 USER_AGENT          = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_5) AppleWebKit/536.26.17 (KHTML, like Gecko) Version/6.0.2 Safari/536.26.17"
 API_SESSION_TIMEOUT = 300 - 1  # seconds, 300 = according to API spec, - 1 = margin
@@ -9,25 +9,16 @@ API_SESSION_TIMEOUT = 300 - 1  # seconds, 300 = according to API spec, - 1 = mar
 ###################################################################################################
 
 def Start():
-	Plugin.AddPrefixHandler('/video/filmon', MainMenu, TITLE, ICON, ART)
-	Plugin.AddViewGroup('List', viewMode = 'List', mediaType = 'items')
-
 	# Set the default ObjectContainer attributes
-	ObjectContainer.title1     = TITLE
-	ObjectContainer.view_group = 'List'
-	ObjectContainer.art        = R(ART)
+	ObjectContainer.title1 = TITLE
+	ObjectContainer.art    = R(ART)
 
-	# Default icons for DirectoryObject and VideoClipObject in case there isn't an image
-	DirectoryObject.thumb = R(ICON)
-	DirectoryObject.art   = R(ART)
-	VideoClipObject.thumb = R(ICON)
-	VideoClipObject.art   = R(ART)
-
-	# Set the default cache time
+	# Set the default cache time and user agent
 	HTTP.CacheTime             = API_SESSION_TIMEOUT
 	HTTP.Headers['User-agent'] = USER_AGENT
 
 ###################################################################################################
+@handler(PREFIX, TITLE, thumb = ICON, art = ART)
 def MainMenu():
 	oc = ObjectContainer()
 	
@@ -52,7 +43,7 @@ def MainMenu():
 	return oc
 
 ####################################################################################################
-@route('/video/filmon/channels')
+@route(PREFIX + '/channels')
 def Channels(title, id):
 	oc = ObjectContainer(title1 = title)
 	
