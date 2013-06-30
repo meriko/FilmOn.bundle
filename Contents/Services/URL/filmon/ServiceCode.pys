@@ -1,0 +1,77 @@
+SWF_URL = 'http://www.filmon.com/tv/modules/FilmOnTV/files/flashapp/filmon/FilmonPlayer.swf'
+
+####################################################################################################
+def NormalizeURL(url):
+	return url
+
+####################################################################################################
+def MetadataObjectForURL(url):
+	try:
+		channelInfo = JSON.ObjectFromURL(url)
+		return EpisodeObject(
+					title = channelInfo['title'],
+					summary = channelInfo['description'],
+					thumb = channelInfo['extra_big_logo']
+				)
+	except:
+		pass	
+
+####################################################################################################
+def MediaObjectsForURL(url):
+	mediaObjs = []
+
+	# Add RTMP
+	mo = MediaObject(
+			protocol                = 'rtmp',
+			audio_channels          = 2,
+			optimized_for_streaming = True,
+			parts                   = [PartObject(key = Callback(PlayVideo, url = url))]
+	)
+
+	mediaObjs.append(mo)
+	
+	return mediaObjs
+
+####################################################################################################
+@indirect
+def PlayVideo(url):
+	channelInfo = JSON.ObjectFromURL(url)
+	
+	for stream in channelInfo['streams']:
+		if stream['quality'] == 'high':
+			[url, clip, app, swf_url] = GetRTMPParameters(stream)
+
+			return IndirectResponse(
+					VideoClipObject,
+					key = 
+						RTMPVideoURL(
+							url = url, 
+							clip = clip,
+							app = app,
+							swf_url = swf_url
+						)
+			)
+
+####################################################################################################
+def GetRTMPParameters(stream):
+	url     = stream['url']
+	clip    = stream['name']
+	swf_url = SWF_URL
+	
+	if 'm4v' in clip.lower():
+		app = 'vodlast'
+	else: 
+		match = Regex('rtmp://(.+?)/live/(.+?)id=(.+?)<').search(stream['url']+'<').groups()
+		if len(match) > 0:
+			app = 'live/%sid=%s' % (match[1], match[2])	
+		else:
+			match = Regex('rtmp://(.+?)/(.+?)id=(.+?)"').search(stream['url']+'<').groups()
+			if len(match) > 0:
+				app     = '%sid=%s' %(match[1], match[2])
+				swf_url = swf_url + "?v=28"	
+			else:
+				match = Regex('rtmp://(.+?)/(.+?)/<').search(stream['url']+'<').groups()
+				if len(match) > 0:
+					app = '%s/' %(match[1])
+	
+	return [url, clip, app, swf_url]
