@@ -1,5 +1,3 @@
-from threading import Timer # Is there a Plex Framework equivalent?
-
 TITLE               = 'FilmOn'
 ART                 = 'art-default.jpg'
 ICON                = 'icon-default.png'
