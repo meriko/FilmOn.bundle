@@ -1,4 +1,5 @@
-SWF_URL = 'http://www.filmon.com/tv/modules/FilmOnTV/files/flashapp/filmon/FilmonPlayer.swf'
+SWF_URL              = 'http://www.filmon.com/tv/modules/FilmOnTV/files/flashapp/filmon/FilmonPlayer.swf'
+SUPPORTED_URL_PREFIX = 'http://www.filmon.com/tv/api/channel/'
 
 ####################################################################################################
 def NormalizeURL(url):
@@ -7,28 +8,30 @@ def NormalizeURL(url):
 ####################################################################################################
 def MetadataObjectForURL(url):
 	try:
-		channelInfo = JSON.ObjectFromURL(url)
-		return EpisodeObject(
-					title = channelInfo['title'],
-					summary = channelInfo['description'],
-					thumb = channelInfo['extra_big_logo']
-				)
+		if url.startswith(SUPPORTED_URL_PREFIX):
+			channelInfo = JSON.ObjectFromURL(url)
+			return EpisodeObject(
+						title = channelInfo['title'],
+						summary = channelInfo['description'],
+						thumb = channelInfo['extra_big_logo']
+			)
 	except:
 		pass	
 
 ####################################################################################################
 def MediaObjectsForURL(url):
 	mediaObjs = []
+	
+	if url.startswith(SUPPORTED_URL_PREFIX):
+		# Add RTMP
+		mo = MediaObject(
+				protocol                = 'rtmp',
+				audio_channels          = 2,
+				optimized_for_streaming = True,
+				parts                   = [PartObject(key = Callback(PlayVideo, url = url))]
+		)
 
-	# Add RTMP
-	mo = MediaObject(
-			protocol                = 'rtmp',
-			audio_channels          = 2,
-			optimized_for_streaming = True,
-			parts                   = [PartObject(key = Callback(PlayVideo, url = url))]
-	)
-
-	mediaObjs.append(mo)
+		mediaObjs.append(mo)
 	
 	return mediaObjs
 
@@ -38,7 +41,7 @@ def PlayVideo(url):
 	channelInfo = JSON.ObjectFromURL(url)
 	
 	for stream in channelInfo['streams']:
-		if stream['quality'] == 'high':
+		if stream['quality'].lower() == 'high':
 			[url, clip, app, swf_url] = GetRTMPParameters(stream)
 
 			return IndirectResponse(
@@ -60,18 +63,21 @@ def GetRTMPParameters(stream):
 	
 	if 'm4v' in clip.lower():
 		app = 'vodlast'
-	else: 
-		match = Regex('rtmp://(.+?)/live/(.+?)id=(.+?)<').search(stream['url']+'<').groups()
-		if len(match) > 0:
-			app = 'live/%sid=%s' % (match[1], match[2])	
-		else:
-			match = Regex('rtmp://(.+?)/(.+?)id=(.+?)"').search(stream['url']+'<').groups()
-			if len(match) > 0:
+	else:
+		searchString = stream['url'] + '<'
+		try:
+			match = Regex('rtmp://(.+?)/live/(.+?)id=(.+?)<').search(searchString).groups()
+			app   = 'live/%sid=%s' % (match[1], match[2])
+		except:
+			try:
+				match   = Regex('rtmp://(.+?)/(.+?)id=(.+?)<').search(searchString).groups()
 				app     = '%sid=%s' %(match[1], match[2])
-				swf_url = swf_url + "?v=28"	
-			else:
-				match = Regex('rtmp://(.+?)/(.+?)/<').search(stream['url']+'<').groups()
-				if len(match) > 0:
-					app = '%s/' %(match[1])
-	
+				swf_url = swf_url + "?v=28"
+			except:
+				try:
+					match = Regex('rtmp://(.+?)/(.+?)/<').search(searchString).groups()
+					app   = '%s/' %(match[1])
+				except:
+					app = None
+					
 	return [url, clip, app, swf_url]
