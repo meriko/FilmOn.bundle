@@ -38,7 +38,7 @@ def MediaObjectsForURL(url):
 ####################################################################################################
 @indirect
 def PlayVideo(url):
-	channelInfo = JSON.ObjectFromURL(url)
+	channelInfo = JSON.ObjectFromURL(url, cacheTime = 0)
 	
 	for stream in channelInfo['streams']:
 		if stream['quality'].lower() == 'high':
@@ -51,7 +51,8 @@ def PlayVideo(url):
 							url = url, 
 							clip = clip,
 							app = app,
-							swf_url = swf_url
+							swf_url = swf_url,
+							live = True
 						)
 			)
 
@@ -79,5 +80,5 @@ def GetRTMPParameters(stream):
 					app   = '%s/' %(match[1])
 				except:
 					app = None
-					
+		
 	return [url, clip, app, swf_url]
