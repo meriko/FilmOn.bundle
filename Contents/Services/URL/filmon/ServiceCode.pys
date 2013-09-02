@@ -26,9 +26,24 @@ def MediaObjectsForURL(url):
 		# Add RTMP
 		mo = MediaObject(
 				protocol                = 'rtmp',
+				video_resolution        = '480',
 				audio_channels          = 2,
+				video_codec             = VideoCodec.H264,
+				audio_codec             = AudioCodec.AAC,
 				optimized_for_streaming = True,
-				parts                   = [PartObject(key = Callback(PlayVideo, url = url))]
+				parts                   = [PartObject(key = Callback(PlayVideo, url = url, quality = 'high'))]
+		)
+		
+		mediaObjs.append(mo)
+
+		mo = MediaObject(
+				protocol                = 'rtmp',
+				video_resolution        = '320',
+				audio_channels          = 2,
+				video_codec             = VideoCodec.H264,
+				audio_codec             = AudioCodec.AAC,
+				optimized_for_streaming = True,
+				parts                   = [PartObject(key = Callback(PlayVideo, url = url, quality = 'low'))]
 		)
 
 		mediaObjs.append(mo)
@@ -37,11 +52,11 @@ def MediaObjectsForURL(url):
 
 ####################################################################################################
 @indirect
-def PlayVideo(url):
+def PlayVideo(url, quality):
 	channelInfo = JSON.ObjectFromURL(url, cacheTime = 0)
 	
 	for stream in channelInfo['streams']:
-		if stream['quality'].lower() == 'high':
+		if stream['quality'].lower() == quality:
 			[url, clip, app, swf_url] = GetRTMPParameters(stream)
 
 			return IndirectResponse(
