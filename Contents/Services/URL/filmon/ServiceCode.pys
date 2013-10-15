@@ -52,8 +52,6 @@ def MediaObjectsForURL(url):
 def PlayHLS(url, quality):
 	channelInfo = JSON.ObjectFromURL(url, cacheTime = 0, headers = HTTP_HEADERS)
 	
-	Log(channelInfo['streams'])
-	
 	for stream in channelInfo['streams']:
 		if stream['quality'].lower() == quality:
 			return IndirectResponse(
