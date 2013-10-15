@@ -3,7 +3,7 @@ PREFIX              = '/video/filmon'
 ART                 = 'art-default.jpg'
 ICON                = 'icon-default.png'
 API_BASE_URL        = 'http://www.filmon.com/tv/api/'
-USER_AGENT          = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_5) AppleWebKit/536.26.17 (KHTML, like Gecko) Version/6.0.2 Safari/536.26.17"
+USER_AGENT          = "Mozilla/5.0 (iPad; CPU OS 6_0 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10A5376e Safari/8536.25"
 API_SESSION_TIMEOUT = 300 - 1  # seconds, 300 = according to API spec, - 1 = margin
 
 ###################################################################################################
@@ -72,9 +72,9 @@ def GetSessionKey():
 	# Since no event when a client is exiting the plugin exist(?), the keep-alive
 	# request can not be used by this plugin since the server would
 	# request keep-alive forever(and thus building up numerous API sessions)...
-	sessionInfo = JSON.ObjectFromURL(API_BASE_URL + "init")
+	sessionInfo = JSON.ObjectFromURL(API_BASE_URL + "init?channelProvider=ipad&app_id=iphone-html5&app_secret=%5Beqgbplf&supported_streaming_protocol=livehttp")
 	sessionKey  = sessionInfo["session_key"]
     
 	return sessionKey
 
-	
+

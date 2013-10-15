@@ -1,6 +1,10 @@
 SWF_URL              = 'http://www.filmon.com/tv/modules/FilmOnTV/files/flashapp/filmon/FilmonPlayer.swf'
 SUPPORTED_URL_PREFIX = 'http://www.filmon.com/tv/api/channel/'
 
+HTTP_HEADERS = {
+	'User-Agent': 'Mozilla/5.0 (iPad; CPU OS 6_0 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10A5376e Safari/8536.25'
+}
+
 ####################################################################################################
 def NormalizeURL(url):
 	return url
@@ -20,80 +24,39 @@ def MetadataObjectForURL(url):
 
 ####################################################################################################
 def MediaObjectsForURL(url):
-	mediaObjs = []
-	
-	if url.startswith(SUPPORTED_URL_PREFIX):
-		# Add RTMP
-		mo = MediaObject(
-				protocol                = 'rtmp',
-				video_resolution        = '480',
-				audio_channels          = 2,
-				video_codec             = VideoCodec.H264,
-				audio_codec             = AudioCodec.AAC,
-				optimized_for_streaming = True,
-				parts                   = [PartObject(key = Callback(PlayVideo, url = url, quality = 'high'))]
+	return [
+		MediaObject(
+			video_resolution = 480,
+			audio_channels = 2,
+			optimized_for_streaming = True,
+			parts = [
+				PartObject(
+					key = HTTPLiveStreamURL(Callback(PlayHLS, url = url, quality = 'high'))
+				)
+			]
+		),
+		MediaObject(
+			video_resolution = 360,
+			audio_channels = 2,
+			optimized_for_streaming = True,
+			parts = [
+				PartObject(
+					key = HTTPLiveStreamURL(Callback(PlayHLS, url = url, quality = 'low'))
+				)
+			]
 		)
-		
-		mediaObjs.append(mo)
-
-		mo = MediaObject(
-				protocol                = 'rtmp',
-				video_resolution        = '320',
-				audio_channels          = 2,
-				video_codec             = VideoCodec.H264,
-				audio_codec             = AudioCodec.AAC,
-				optimized_for_streaming = True,
-				parts                   = [PartObject(key = Callback(PlayVideo, url = url, quality = 'low'))]
-		)
-
-		mediaObjs.append(mo)
-	
-	return mediaObjs
+	]
 
 ####################################################################################################
 @indirect
-def PlayVideo(url, quality):
-	channelInfo = JSON.ObjectFromURL(url, cacheTime = 0)
+def PlayHLS(url, quality):
+	channelInfo = JSON.ObjectFromURL(url, cacheTime = 0, headers = HTTP_HEADERS)
+	
+	Log(channelInfo['streams'])
 	
 	for stream in channelInfo['streams']:
 		if stream['quality'].lower() == quality:
-			[url, clip, app, swf_url] = GetRTMPParameters(stream)
-
 			return IndirectResponse(
-					VideoClipObject,
-					key = 
-						RTMPVideoURL(
-							url = url, 
-							clip = clip,
-							app = app,
-							swf_url = swf_url,
-							live = True
-						)
+				VideoClipObject,
+				key = HTTPLiveStreamURL(stream['url'])
 			)
-
-####################################################################################################
-def GetRTMPParameters(stream):
-	url     = stream['url']
-	clip    = stream['name']
-	swf_url = SWF_URL
-	
-	if 'm4v' in clip.lower():
-		app = 'vodlast'
-	else:
-		searchString = stream['url'] + '<'
-		try:
-			match = Regex('rtmp://(.+?)/live/(.+?)id=(.+?)<').search(searchString).groups()
-			app   = 'live/%sid=%s' % (match[1], match[2])
-		except:
-			try:
-				match   = Regex('rtmp://(.+?)/(.+?)id=(.+?)<').search(searchString).groups()
-				app     = '%sid=%s' %(match[1], match[2])
-				swf_url = swf_url + "?v=28"
-			except:
-				try:
-					match = Regex('rtmp://(.+?)/(.+?)/<').search(searchString).groups()
-					app   = '%s/' %(match[1])
-				except:
-					app = None
-		
-	return [url, clip, app, swf_url]
