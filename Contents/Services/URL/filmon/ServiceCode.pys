@@ -1,6 +1,3 @@
-SWF_URL              = 'http://www.filmon.com/tv/modules/FilmOnTV/files/flashapp/filmon/FilmonPlayer.swf'
-SUPPORTED_URL_PREFIX = 'http://www.filmon.com/tv/api/channel/'
-
 HTTP_HEADERS = {
 	'User-Agent': 'Mozilla/5.0 (iPad; CPU OS 6_0 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10A5376e Safari/8536.25'
 }
@@ -12,29 +9,19 @@ def NormalizeURL(url):
 ####################################################################################################
 def MetadataObjectForURL(url):
 	try:
-		if url.startswith(SUPPORTED_URL_PREFIX):
-			channelInfo = JSON.ObjectFromURL(url)
-			return EpisodeObject(
-						title = channelInfo['title'],
-						summary = channelInfo['description'],
-						thumb = channelInfo['extra_big_logo']
-			)
+		channelInfo = JSON.ObjectFromURL(url)
+		
+		return EpisodeObject(
+			title = channelInfo['title'],
+			summary = channelInfo['description'],
+			thumb = channelInfo['extra_big_logo']
+		)
 	except:
 		pass	
 
 ####################################################################################################
 def MediaObjectsForURL(url):
 	return [
-		MediaObject(
-			video_resolution = 480,
-			audio_channels = 2,
-			optimized_for_streaming = True,
-			parts = [
-				PartObject(
-					key = HTTPLiveStreamURL(Callback(PlayHLS, url = url, quality = 'high'))
-				)
-			]
-		),
 		MediaObject(
 			video_resolution = 360,
 			audio_channels = 2,
