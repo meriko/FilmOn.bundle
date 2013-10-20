@@ -34,7 +34,7 @@ def MainMenu():
 	sessionKey = GetSessionKey()
 	
 	groupsInfo = JSON.ObjectFromURL(API_BASE_URL + "groups" + "?session_key=" + sessionKey)
-	
+
 	for group in groupsInfo:
 		oc.add(
 			DirectoryObject(
@@ -86,7 +86,7 @@ def GetSessionKey():
 	sessionKey  = sessionInfo["session_key"]
     
 	if Prefs['email'] and Prefs['password']:
-		loginURL = API_BASE_URL + 'login?session_key=%s&login=%s&password=%s' % (sessionkey, Prefs['email'], md5(Prefs['password']).hexdigest())
+		loginURL = API_BASE_URL + 'login?session_key=%s&login=%s&password=%s' % (sessionKey, Prefs['email'], md5(Prefs['password']).hexdigest())
 		content  = HTTP.Request(loginURL).content
     
 	return sessionKey
