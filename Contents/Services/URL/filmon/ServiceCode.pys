@@ -50,3 +50,5 @@ def PlayHLS(url):
 				VideoClipObject,
 				key = HTTPLiveStreamURL(stream['url'])
 			)		
+
+	raise Ex.MediaNotAvailable
