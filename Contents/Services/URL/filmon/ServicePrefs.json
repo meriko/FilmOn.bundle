@@ -1,5 +1,12 @@
 [
 	{
+		"id": "preferhd",
+		"type": "bool",
+		"label": "Prefer HD",
+		"default": "true",
+		"secure": "true"
+	},
+	{
 		"id": "email",
 		"type": "text",
 		"label": "E-Mail",

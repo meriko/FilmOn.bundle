@@ -39,8 +39,14 @@ def PlayHLS(url):
 	channelInfo = JSON.ObjectFromURL(url, cacheTime = 0, headers = HTTP_HEADERS)
 
 	for stream in channelInfo['streams']:
-		if int(stream['watch-timeout']) >= 86000:
+		if Prefs['preferhd']:
+			if int(stream['watch-timeout']) >= 86000:
+				return IndirectResponse(
+					VideoClipObject,
+					key = HTTPLiveStreamURL(stream['url'])
+				)
+		elif stream['quality'].lower() == 'low':
 			return IndirectResponse(
 				VideoClipObject,
 				key = HTTPLiveStreamURL(stream['url'])
-			)
+			)		
