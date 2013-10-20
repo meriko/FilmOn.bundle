@@ -9,7 +9,6 @@ USER_AGENT          = "Mozilla/5.0 (iPad; CPU OS 6_0 like Mac OS X) AppleWebKit/
 API_SESSION_TIMEOUT = 300 - 1  # seconds, 300 = according to API spec, - 1 = margin
 
 ###################################################################################################
-
 def Start():
 	# Set the default ObjectContainer attributes
 	ObjectContainer.title1 = TITLE
@@ -20,6 +19,25 @@ def Start():
 	HTTP.Headers['User-agent'] = USER_AGENT
 
 ###################################################################################################
+def ValidatePrefs():
+	if Prefs['login'] and Prefs['email'] and Prefs['password']:
+		Dict.Reset()
+		Dict['Login'] = True
+	
+		[sessionKey, loginStatus] = GetSessionParameters()
+	
+		if loginStatus:
+			return ObjectContainer(
+				header = "Login success",
+				message = "Successfully logged in"
+			)
+		else:
+			return ObjectContainer(
+				header = "Login failure",
+				message = "Invalid username or password.\r\nPlease note that the account must include a paid subscription"
+			)
+	
+###################################################################################################
 @handler(PREFIX, TITLE, thumb = ICON, art = ART)
 def MainMenu():
 	oc = ObjectContainer()
@@ -27,12 +45,11 @@ def MainMenu():
 	oc.add(
 		PrefsObject(
 			title = 'Preferences',
-			summary = 'Set email and password to get access to HD streams\r\n\r\nSign up for an account at www.filmon.com'
+			summary = 'Set email and password to get access to HD streams\r\nSign up for an account at www.filmon.com'
 		)
 	)
 
-	sessionKey = GetSessionKey()
-	
+	[sessionKey, loginStatus] = GetSessionParameters()
 	groupsInfo = JSON.ObjectFromURL(API_BASE_URL + "groups" + "?session_key=" + sessionKey)
 
 	for group in groupsInfo:
@@ -57,7 +74,7 @@ def MainMenu():
 def Channels(title, id):
 	oc = ObjectContainer(title1 = title)
 	
-	sessionKey   = GetSessionKey()
+	[sessionKey, loginStatus] = GetSessionParameters()
 	channelsInfo = JSON.ObjectFromURL(API_BASE_URL + "channels" + "?session_key=" + sessionKey)
 						
 	for channel in channelsInfo:
@@ -73,7 +90,7 @@ def Channels(title, id):
 	return oc
 
 ####################################################################################################
-def GetSessionKey():
+def GetSessionParameters():
 	# Here we utilize the HTTP cache, which is set to API session timeout
 	# i.e if/when the current session times out, we automatically get a new
 	# session key. If within the time out period, the cache function will
@@ -82,9 +99,19 @@ def GetSessionKey():
 	# Since no event when a client is exiting the plugin exist(?), the keep-alive
 	# request can not be used by this plugin since the server would
 	# request keep-alive forever(and thus building up numerous API sessions)...
-	sessionInfo = JSON.ObjectFromURL(API_BASE_URL + "init?channelProvider=ipad&app_id=iphone-html5&app_secret=%5Beqgbplf&supported_streaming_protocol=livehttp")
+	sessionInfo = JSON.ObjectFromURL(API_BASE_URL + "init?channelProvider=ipad&app_id=iphone-html5&app_secret=%s&supported_streaming_protocol=livehttp" % String.Decode('JTVCZXFnYnBsZg__'))
 	sessionKey  = sessionInfo["session_key"]
-    
+	
+	if 'Login' in Dict:
+		if not Login(sessionKey):
+			# If a login fail, we will only retry if the preferences are
+			# changed/updated
+			del Dict['Login']
+	
+	return [sessionKey, 'Login' in Dict]
+
+####################################################################################################
+def Login(sessionKey):
 	if Prefs['login'] and Prefs['email'] and Prefs['password']:
 		postData               = {}
 		postData['login']      = Prefs['email']
@@ -94,8 +121,8 @@ def GetSessionKey():
 		try:		
 			loginURL = API_BASE_URL + 'login' + "?session_key=" + sessionKey
 			content  = HTTP.Request(url = loginURL, values = postData).content
+			return True
 		except:
-			pass
-    
-	return sessionKey
-
+			return False
+	else:
+		return True
