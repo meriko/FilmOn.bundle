@@ -7,6 +7,13 @@
 		"secure": "true"
 	},
 	{
+		"id": "login",
+		"type": "bool",
+		"label": "Enable login",
+		"default": "false",
+		"secure": "true"
+	},
+	{
 		"id": "email",
 		"type": "text",
 		"label": "E-Mail",

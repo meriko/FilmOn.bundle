@@ -85,7 +85,7 @@ def GetSessionKey():
 	sessionInfo = JSON.ObjectFromURL(API_BASE_URL + "init?channelProvider=ipad&app_id=iphone-html5&app_secret=%5Beqgbplf&supported_streaming_protocol=livehttp")
 	sessionKey  = sessionInfo["session_key"]
     
-	if Prefs['email'] and Prefs['password']:
+	if Prefs['login'] and Prefs['email'] and Prefs['password']:
 		loginURL = API_BASE_URL + 'login?session_key=%s&login=%s&password=%s' % (sessionKey, Prefs['email'], md5(Prefs['password']).hexdigest())
 		content  = HTTP.Request(loginURL).content
     
