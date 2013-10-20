@@ -23,12 +23,11 @@ def MetadataObjectForURL(url):
 def MediaObjectsForURL(url):
 	return [
 		MediaObject(
-			video_resolution = 360,
 			audio_channels = 2,
 			optimized_for_streaming = True,
 			parts = [
 				PartObject(
-					key = HTTPLiveStreamURL(Callback(PlayHLS, url = url, quality = 'low'))
+					key = HTTPLiveStreamURL(Callback(PlayHLS, url = url))
 				)
 			]
 		)
@@ -36,11 +35,11 @@ def MediaObjectsForURL(url):
 
 ####################################################################################################
 @indirect
-def PlayHLS(url, quality):
+def PlayHLS(url):
 	channelInfo = JSON.ObjectFromURL(url, cacheTime = 0, headers = HTTP_HEADERS)
-	
+
 	for stream in channelInfo['streams']:
-		if stream['quality'].lower() == quality:
+		if int(stream['watch-timeout']) >= 86000:
 			return IndirectResponse(
 				VideoClipObject,
 				key = HTTPLiveStreamURL(stream['url'])

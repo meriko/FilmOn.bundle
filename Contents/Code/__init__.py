@@ -1,3 +1,5 @@
+from hashlib import md5
+
 TITLE               = 'FilmOn'
 PREFIX              = '/video/filmon'
 ART                 = 'art-default.jpg'
@@ -21,8 +23,16 @@ def Start():
 @handler(PREFIX, TITLE, thumb = ICON, art = ART)
 def MainMenu():
 	oc = ObjectContainer()
-	
+
+	oc.add(
+		PrefsObject(
+			title = 'Preferences',
+			summary = 'Set email and password to get access to HD streams\r\n\r\nSign up for an account at www.filmon.com'
+		)
+	)
+
 	sessionKey = GetSessionKey()
+	
 	groupsInfo = JSON.ObjectFromURL(API_BASE_URL + "groups" + "?session_key=" + sessionKey)
 	
 	for group in groupsInfo:
@@ -31,8 +41,8 @@ def MainMenu():
 				key = 
 					Callback(
 						Channels, 
-							title = group["title"].title(), 
-							id = group["group_id"]
+						title = group["title"].title(), 
+						id = group["group_id"]
 					),
 				title = group["title"].title(), 
 				thumb = group["logo_148x148_uri"],
@@ -75,6 +85,9 @@ def GetSessionKey():
 	sessionInfo = JSON.ObjectFromURL(API_BASE_URL + "init?channelProvider=ipad&app_id=iphone-html5&app_secret=%5Beqgbplf&supported_streaming_protocol=livehttp")
 	sessionKey  = sessionInfo["session_key"]
     
+	if Prefs['email'] and Prefs['password']:
+		loginURL = API_BASE_URL + 'login?session_key=%s&login=%s&password=%s' % (sessionkey, Prefs['email'], md5(Prefs['password']).hexdigest())
+		content  = HTTP.Request(loginURL).content
+    
 	return sessionKey
-
 
