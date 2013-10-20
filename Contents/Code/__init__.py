@@ -86,8 +86,16 @@ def GetSessionKey():
 	sessionKey  = sessionInfo["session_key"]
     
 	if Prefs['login'] and Prefs['email'] and Prefs['password']:
-		loginURL = API_BASE_URL + 'login?session_key=%s&login=%s&password=%s' % (sessionKey, Prefs['email'], md5(Prefs['password']).hexdigest())
-		content  = HTTP.Request(loginURL).content
+		postData               = {}
+		postData['login']      = Prefs['email']
+		postData['password']   = md5(Prefs['password']).hexdigest()
+		postData['sessionkey'] = sessionKey
+
+		try:		
+			loginURL = API_BASE_URL + 'login' + "?session_key=" + sessionKey
+			content  = HTTP.Request(url = loginURL, values = postData).content
+		except:
+			pass
     
 	return sessionKey
 
