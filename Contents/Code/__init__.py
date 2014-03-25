@@ -107,6 +107,8 @@ def GetSessionParameters():
 			# If a login fail, we will only retry if the preferences are
 			# changed/updated
 			del Dict['Login']
+	else:
+		Log('No login attempted')
 	
 	return [sessionKey, 'Login' in Dict]
 
@@ -121,8 +123,11 @@ def Login(sessionKey):
 		try:		
 			loginURL = API_BASE_URL + 'login' + "?session_key=" + sessionKey
 			content  = HTTP.Request(url = loginURL, values = postData).content
+			Log('Successfully logged in!')
 			return True
 		except:
+			Log('Login failed!')
 			return False
 	else:
+		Log('Attempted to login but not all required settings are set')
 		return True
