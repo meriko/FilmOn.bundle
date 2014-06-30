@@ -1,55 +1,85 @@
 HTTP_HEADERS = {
-	'User-Agent': 'Mozilla/5.0 (iPad; CPU OS 6_0 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10A5376e Safari/8536.25'
+    'User-Agent': 'Mozilla/5.0 (iPad; CPU OS 6_0 like Mac OS X) AppleWebKit/536.26 (KHTML, like Gecko) Version/6.0 Mobile/10A5376e Safari/8536.25'
 }
 
 ####################################################################################################
 def NormalizeURL(url):
-	return url
+    return url
 
 ####################################################################################################
 def MetadataObjectForURL(url):
-	try:
-		channelInfo = JSON.ObjectFromURL(url)
-		
-		return EpisodeObject(
-			title = channelInfo['title'],
-			summary = channelInfo['description'],
-			thumb = channelInfo['extra_big_logo']
-		)
-	except:
-		pass	
+    try:
+        channelInfo = JSON.ObjectFromURL(url, cacheTime = 0, headers = HTTP_HEADERS)
+        
+        try:
+            title = channelInfo['now_playing']['programme_name']
+        except:
+            title = channelInfo['title']
+        
+        try:
+            summary = channelInfo['now_playing']['programme_description']
+        except:
+            summary = channelInfo['description']
+            
+        try:
+            duration = channelInfo['now_playing']['length'] * 1000
+        except:
+            duration = None
+            
+        try:
+            thumb = channelInfo['now_playing']['images'][0]['url']
+        except:
+            thumb = channelInfo['extra_big_logo']
+        
+        stream_is_time_limited = True
+        for stream in channelInfo['streams']:
+            if int(stream['watch-timeout']) >= 86000:
+                stream_is_time_limited = False
+        
+        if stream_is_time_limited:
+            title   = "PREVIEW: " + title
+            summary = "SUBSCRIPTION REQUIRED, THIS IS ONLY A PREVIEW!\r\n\r\n" + summary
+            
+        return EpisodeObject(
+            title = title,
+            summary = summary,
+            thumb = thumb,
+            duration = duration
+        )
+    except:
+        pass    
 
 ####################################################################################################
 def MediaObjectsForURL(url):
-	return [
-		MediaObject(
-			audio_channels = 2,
-			video_resolution = 'sd',
-			optimized_for_streaming = True,
-			parts = [
-				PartObject(
-					key = HTTPLiveStreamURL(Callback(PlayHLS, url = url))
-				)
-			]
-		)
-	]
+    return [
+        MediaObject(
+            audio_channels = 2,
+            video_resolution = 'sd',
+            optimized_for_streaming = True,
+            parts = [
+                PartObject(
+                    key = HTTPLiveStreamURL(Callback(PlayHLS, url = url))
+                )
+            ]
+        )
+    ]
 
 ####################################################################################################
 @indirect
 def PlayHLS(url):
-	channelInfo = JSON.ObjectFromURL(url, cacheTime = 0, headers = HTTP_HEADERS)
+    channelInfo = JSON.ObjectFromURL(url, headers = HTTP_HEADERS)
 
-	for stream in channelInfo['streams']:
-		if Prefs['preferhd']:
-			if int(stream['watch-timeout']) >= 86000:
-				return IndirectResponse(
-					VideoClipObject,
-					key = HTTPLiveStreamURL(stream['url'])
-				)
-		elif stream['quality'].lower() == 'low':
-			return IndirectResponse(
-				VideoClipObject,
-				key = HTTPLiveStreamURL(stream['url'])
-			)		
+    for stream in channelInfo['streams']:
+        if Prefs['preferhd']:
+            if int(stream['watch-timeout']) >= 86000:
+                return IndirectResponse(
+                    VideoClipObject,
+                    key = HTTPLiveStreamURL(stream['url'])
+                )
+        elif stream['quality'].lower() == 'low':
+            return IndirectResponse(
+                VideoClipObject,
+                key = HTTPLiveStreamURL(stream['url'])
+            )       
 
-	raise Ex.MediaNotAvailable
+    raise Ex.MediaNotAvailable
