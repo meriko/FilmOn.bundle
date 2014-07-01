@@ -61,7 +61,7 @@ def MainMenu():
                         title = title
                     ),
                 title = title,
-                thumb = R(ICON)
+                thumb = 'http://www.filmon.com/tv/themes/filmontv/images/category/favorites_stb.png'
             )
         )
     
