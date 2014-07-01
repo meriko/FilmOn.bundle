@@ -7,6 +7,13 @@
 		"secure": "true"
 	},
 	{
+		"id": "onlyfree",
+		"type": "bool",
+		"label": "Only show free channels",
+		"default": "true",
+		"secure": "true"
+	},
+	{
 		"id": "login",
 		"type": "bool",
 		"label": "Enable login",

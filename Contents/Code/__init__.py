@@ -76,9 +76,9 @@ def Channels(title, id):
     
     [sessionKey, loginStatus] = GetSessionParameters()
     channelsInfo = JSON.ObjectFromURL(API_BASE_URL + "channels" + "?session_key=" + sessionKey)
-                        
+    
     for channel in channelsInfo:
-        if id == channel["group_id"]:
+        if id == channel["group_id"] and (not Prefs['onlyfree'] or channel['is_free_sd_mode'] == '1'):
             oc.add(
                 EpisodeObject(
                     url = API_BASE_URL + "channel/" + channel["id"] + "?session_key=" + sessionKey,
@@ -86,7 +86,16 @@ def Channels(title, id):
                     thumb = channel["big_logo"].replace("big_logo", "extra_big_logo")
                 )
             )   
-        
+    
+    
+    if len(oc) < 1:
+        oc.header  = "Sorry"
+
+        if Prefs['onlyfree']:
+            oc.message = "No free channels found! You can preview channels in this group by changing the preference 'Only show free channels'"
+        else:
+            oc.message = "No channels found!"
+    
     return oc
 
 ####################################################################################################
