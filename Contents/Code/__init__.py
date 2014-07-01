@@ -50,6 +50,21 @@ def MainMenu():
     )
 
     [sessionKey, loginStatus] = GetSessionParameters()
+    
+    if loginStatus:
+        title = 'Favorites'
+        oc.add(
+            DirectoryObject(
+                key =
+                    Callback(
+                        Favorites,
+                        title = title
+                    ),
+                title = title,
+                thumb = R(ICON)
+            )
+        )
+    
     groupsInfo = JSON.ObjectFromURL(API_BASE_URL + "groups" + "?session_key=" + sessionKey)
 
     for group in groupsInfo:
@@ -70,9 +85,34 @@ def MainMenu():
     return oc
 
 ####################################################################################################
+@route(PREFIX + '/favorites')
+def Favorites(title):
+    oc = ObjectContainer(title2 = title)
+
+    [sessionKey, loginStatus] = GetSessionParameters()
+    group = JSON.ObjectFromURL(API_BASE_URL + "favorites?session_key=%s&run=get" % sessionKey)
+    
+    for field in group['result']:
+        channel = JSON.ObjectFromURL(API_BASE_URL + "channel/%s?session_key=%s" % (field['channel_id'], sessionKey))
+        
+        oc.add(
+            EpisodeObject(
+                url = API_BASE_URL + "channel/" + channel["id"] + "?session_key=" + sessionKey,
+                title = channel["title"],
+                thumb = channel["big_logo"].replace("big_logo", "extra_big_logo")
+            )
+        )
+    
+    if len(oc) < 1:
+        oc.header  = "Sorry"
+        oc.message = "No favorites found! Add your favorites on www.filmon.com"
+    
+    return oc
+
+####################################################################################################
 @route(PREFIX + '/channels')
 def Channels(title, id):
-    oc = ObjectContainer(title1 = title)
+    oc = ObjectContainer(title2 = title)
     
     [sessionKey, loginStatus] = GetSessionParameters()
     channelsInfo = JSON.ObjectFromURL(API_BASE_URL + "channels" + "?session_key=" + sessionKey)
