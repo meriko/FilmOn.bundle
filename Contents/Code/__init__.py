@@ -97,7 +97,7 @@ def Favorites(title):
         
         oc.add(
             EpisodeObject(
-                url = API_BASE_URL + "channel/" + channel["id"] + "?session_key=" + sessionKey,
+                url = API_BASE_URL + "channel/" + str(channel["id"]) + "?session_key=" + sessionKey,
                 title = channel["title"],
                 thumb = channel["big_logo"].replace("big_logo", "extra_big_logo")
             )
