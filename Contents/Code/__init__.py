@@ -181,37 +181,37 @@ def Channels(title, id):
 ####################################################################################################
 @route(PREFIX + '/createvideoclipobject', duration = int)
 def CreateVideoClipObject(url, title, summary, duration, thumb, include_container = False):
-  vco = VideoClipObject(
-    key =
-        Callback(
-            CreateVideoClipObject,
-            url = url,
-            title = title,
-            summary = summary,
-            duration = duration,
-            thumb = thumb,
-            include_container = True
-        ),
-    rating_key = url,
-    title = title,
-    thumb = thumb,
-    summary = summary,
-    duration = duration,
-    items = [
-      MediaObject(
-        parts = [
-          PartObject(key = HTTPLiveStreamURL(url = url))
-        ],
-        video_resolution = 'sd',
-        audio_channels = 2
-      )
-    ]
-  )
-
-  if include_container:
-    return ObjectContainer(objects = [vco])
-  else:
-    return vco
+    vco = VideoClipObject(
+        key =
+            Callback(
+                CreateVideoClipObject,
+                url = url,
+                title = title,
+                summary = summary,
+                duration = duration,
+                thumb = thumb,
+                include_container = True
+            ),
+        rating_key = url,
+        title = title,
+        thumb = thumb,
+        summary = summary,
+        duration = duration,
+        items = [
+            MediaObject(
+                parts = [
+                    PartObject(key = HTTPLiveStreamURL(url = url))
+                ],
+                video_resolution = 'sd',
+                audio_channels = 2
+            )
+        ]
+    )
+    
+    if include_container:
+        return ObjectContainer(objects = [vco])
+    else:
+        return vco
 
 ####################################################################################################
 def GetSessionParameters():
