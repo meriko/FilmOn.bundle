@@ -64,6 +64,18 @@ def MainMenu():
                 thumb = 'http://www.filmon.com/tv/themes/filmontv/images/category/favorites_stb.png'
             )
         )
+        
+        title = 'Recordings'
+        oc.add(
+            DirectoryObject(
+                key =
+                    Callback(
+                        Recordings,
+                        title = title
+                    ),
+                title = title 
+            )
+        )
     
     groupsInfo = JSON.ObjectFromURL(API_BASE_URL + "groups" + "?session_key=" + sessionKey)
 
@@ -108,6 +120,34 @@ def Favorites(title):
         oc.message = "No favorites found! Add your favorites on www.filmon.com"
     
     return oc
+    
+####################################################################################################
+@route(PREFIX + '/recordings')
+def Recordings(title):
+    oc = ObjectContainer(title2 = title)
+
+    [sessionKey, loginStatus] = GetSessionParameters()
+    data = JSON.ObjectFromURL(API_BASE_URL + "dvr/list?session_key=%s&format=json" % sessionKey)
+    
+    for recording in data['recordings']:
+        if recording['status'] != 'Recorded':
+            continue
+        
+        oc.add(
+            CreateVideoClipObject(
+                url = recording["stream_url"],
+                title = recording["title"],
+                summary = recording["description"],
+                duration = int(recording['length'] * 1000),
+                thumb = 'http://static.filmon.com/couch/channels/%s/extra_big_logo.png' % recording['channel_id']
+            )
+        )
+    
+    if len(oc) < 1:
+        oc.header  = "Sorry"
+        oc.message = "No recordings found! Add your recordings on www.filmon.com"
+    
+    return oc
 
 ####################################################################################################
 @route(PREFIX + '/channels')
@@ -137,6 +177,41 @@ def Channels(title, id):
             oc.message = "No channels found!"
     
     return oc
+
+####################################################################################################
+@route(PREFIX + '/createvideoclipobject', duration = int)
+def CreateVideoClipObject(url, title, summary, duration, thumb, include_container = False):
+  vco = VideoClipObject(
+    key =
+        Callback(
+            CreateVideoClipObject,
+            url = url,
+            title = title,
+            summary = summary,
+            duration = duration,
+            thumb = thumb,
+            include_container = True
+        ),
+    rating_key = url,
+    title = title,
+    thumb = thumb,
+    summary = summary,
+    duration = duration,
+    items = [
+      MediaObject(
+        parts = [
+          PartObject(key = HTTPLiveStreamURL(url = url))
+        ],
+        video_resolution = 'sd',
+        audio_channels = 2
+      )
+    ]
+  )
+
+  if include_container:
+    return ObjectContainer(objects = [vco])
+  else:
+    return vco
 
 ####################################################################################################
 def GetSessionParameters():
