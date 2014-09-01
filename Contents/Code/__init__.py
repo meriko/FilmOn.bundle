@@ -138,7 +138,7 @@ def Recordings(title):
                 url = recording["stream_url"],
                 title = recording["title"],
                 summary = recording["description"],
-                duration = int(recording['length'] * 1000),
+                duration = int(recording['length']) * 1000,
                 thumb = 'http://static.filmon.com/couch/channels/%s/extra_big_logo.png' % recording['channel_id']
             )
         )
