@@ -179,7 +179,7 @@ def Channels(title, id):
     return oc
 
 ####################################################################################################
-@route(PREFIX + '/createvideoclipobject', duration = int)
+@route(PREFIX + '/createvideoclipobject', duration = int, include_container = bool)
 def CreateVideoClipObject(url, title, summary, duration, thumb, include_container = False):
     vco = VideoClipObject(
         key =
