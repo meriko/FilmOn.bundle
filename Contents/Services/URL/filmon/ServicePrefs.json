@@ -34,5 +34,12 @@
 		"label": "Password",
 		"default": "",
 		"secure": "true"
+	},
+	{
+		"id": "custom",
+		"type": "bool",
+		"label": "Advanced: Use custom channel listing",
+		"default": "false",
+		"secure": "true"
 	}
 ]

@@ -40,6 +40,17 @@ def ValidatePrefs():
 ###################################################################################################
 @handler(PREFIX, TITLE, thumb = ICON, art = ART)
 def MainMenu():
+
+    try:
+        if Prefs['custom']:
+            data = Plist.ObjectFromString(Resource.Load('custom.plist'))
+            Log("Using custom layout")
+            return Custom(data)
+        else:
+            Log("Using standard layout")  
+    except:
+        Log("Attempted to use custom layout but something went wrong. Using standard layout ...")
+
     oc = ObjectContainer()
 
     oc.add(
@@ -95,6 +106,37 @@ def MainMenu():
         ) 
     
     return oc
+
+####################################################################################################
+@route(PREFIX + '/custom')
+def Custom(data):
+    oc = ObjectContainer()
+    
+    Log(data)
+
+    [sessionKey, loginStatus] = GetSessionParameters()
+    channelsInfo = JSON.ObjectFromURL(API_BASE_URL + "channels" + "?session_key=" + sessionKey)
+    
+    for custom_channel in data['Channels']:
+        for channel in channelsInfo:
+            if custom_channel.lower() == channel["title"].lower():
+                
+                oc.add(
+                    EpisodeObject(
+                        url = API_BASE_URL + "channel/" + channel["id"] + "?session_key=" + sessionKey,
+                        title = channel["title"],
+                        thumb = channel["big_logo"].replace("big_logo", "extra_big_logo")
+                    )
+                )
+
+    oc.add(
+        PrefsObject(
+            title = 'Preferences',
+            summary = 'Set email and password to get access to HD streams\r\nSign up for an account at www.filmon.com'
+        )
+    )
+
+    return oc    
 
 ####################################################################################################
 @route(PREFIX + '/favorites')
