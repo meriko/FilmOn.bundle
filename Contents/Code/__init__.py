@@ -43,9 +43,12 @@ def MainMenu():
 
     try:
         if Prefs['custom']:
-            data = Plist.ObjectFromString(Resource.Load('custom.plist'))
-            Log("Using custom layout")
-            return Custom(data)
+            try:
+                data = Plist.ObjectFromString(Resource.Load('custom.plist'))
+                Log("Using custom layout")
+                return Custom(data)
+            except:
+                Log("Preference to use custom layout, but custom.plist file not found or corrupt!")
         else:
             Log("Using standard layout")  
     except:
