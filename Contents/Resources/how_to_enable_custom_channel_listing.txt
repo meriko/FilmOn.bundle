@@ -1,0 +1,1 @@
+Use the example.plist file to create a file named custom.plist and then edit this file according to your choice.

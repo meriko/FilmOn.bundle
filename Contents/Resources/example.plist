@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+	<dict>
+		<key>Channels</key>
+			<array>
+				<string>BBC One</string>
+				<string>BBC Two</string>
+				<string>BBC Three</string>
+				<string>BBC Four</string>
+				<string>BBC News</string>
+			</array>
+	</dict>
+</plist>
