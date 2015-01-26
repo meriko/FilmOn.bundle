@@ -44,11 +44,11 @@ def MainMenu():
     try:
         if Prefs['custom']:
             try:
-                data = Plist.ObjectFromString(Resource.Load('custom.plist'))
+                data = XML.ObjectFromString(Resource.Load('custom.xml'))
                 Log("Using custom layout")
                 return Custom(data)
             except:
-                Log("Preference to use custom layout, but custom.plist file not found or corrupt!")
+                Log("Preference to use custom layout, but custom.xml file not found or corrupt!")
         else:
             Log("Using standard layout")  
     except:
@@ -114,15 +114,13 @@ def MainMenu():
 @route(PREFIX + '/custom')
 def Custom(data):
     oc = ObjectContainer()
-    
-    Log(data)
 
     [sessionKey, loginStatus] = GetSessionParameters()
     channelsInfo = JSON.ObjectFromURL(API_BASE_URL + "channels" + "?session_key=" + sessionKey)
     
-    for custom_channel in data['Channels']:
+    for custom_channel in data.xpath("//Channels/Channel/@name"):
         for channel in channelsInfo:
-            if custom_channel.lower() == channel["title"].lower():
+            if custom_channel.lower().strip() == channel["title"].lower().strip():
                 
                 oc.add(
                     EpisodeObject(

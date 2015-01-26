@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Channels>
+    <Channel name="BBC One" />
+    <Channel name="BBC Two" />
+    <Channel name="BBC Three" />
+    <Channel name="BBC Four" />
+    <Channel name="BBC News" />
+    <Channel name="Channel 4" />
+    <Channel name="Channel 5" />
+</Channels>
